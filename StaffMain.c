@@ -10,19 +10,16 @@ void staffAdd();
 void staffDisplay();
 void staffModify();
 void staffDelete();
-void staffPay();
+void staffPassRecovery();
 
 typedef struct {
-	char employeeID[15], employeeName[40], password[20], passRecovery[20], position[30], gender;
+	char employeeID[10], employeeName[40], password[20], passRecovery[20], position[30], gender;
 	int age;
-}staff;
-
+}Staff;
 void staffMain()
 {
 	printf("_____Welcome to Adminstration Page._____\n");
-	staffLogin();
 	modeSelection();
-
 }
 void modeSelection() 
 {
@@ -33,7 +30,7 @@ void modeSelection()
 		printf("Mode 2: Display Staff.\n");
 		printf("Mode 3: Modify Staff Details.\n");
 		printf("Mode 4: Delete Staff.\n");
-		printf("Mode 5: Calculate Staff Pay\n");
+		printf("Mode 5: Password Recovery\n");
 		printf("Enter 6 to exit the program.\n\n");
 		printf("Enter you selection:");
 		rewind(stdin);
@@ -53,12 +50,12 @@ void modeSelection()
 			staffDelete();
 			break;
 		case 5:
-			staffPay();
+			staffPassRecovery();
 			break;
 		case 6:
 			exit(-1);
 		default:
 			printf("Invalid mode selection, please enter again.\n\n");
 		}
-	} while (choice >=1 || choice <=6);
+	} while (choice != 6);
 };
