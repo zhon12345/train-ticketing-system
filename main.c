@@ -78,8 +78,8 @@ void staff() {
 
 void staffView() {
     struct Ticket ticket;
-    FILE *ptr = fopen("tickets.txt", "r");
-    if (ptr == NULL) {
+    FILE *ptrView = fopen("tickets.txt", "r");
+    if (ptrView == NULL) {
         printf("An error occurred, please try again!\n");
         exit(-1);
     }
@@ -87,7 +87,7 @@ void staffView() {
     displayHeader();
 
     int count = 0;
-    while (fscanf(ptr, "%[^|]|%[^|]|%[^|]|%lf\n", &ticket.destination, &ticket.trainID, &ticket.departureDate, &ticket.price) != EOF) {
+    while (fscanf(ptrView, "%[^|]|%[^|]|%[^|]|%lf\n", &ticket.destination, &ticket.trainID, &ticket.departureDate, &ticket.price) != EOF) {
         count++;
         printf("%2d  %-15s %-10s %-15s %.2lf\n", count, ticket.destination, ticket.trainID, ticket.departureDate, ticket.price);
     }
@@ -95,7 +95,7 @@ void staffView() {
     if (count == 0) {
         printf("No records found.\n");
     }
-    fclose(ptr);
+    fclose(ptrView);
 }
 
 void staffAdd() {
@@ -109,7 +109,7 @@ void staffAdd() {
     char prompt;
 
     do {
-        printf("Enter destination (eg. Kuala Lumpur): ");
+        printf("\nEnter destination (eg. Kuala Lumpur): ");
         rewind(stdin);
         gets(ticket.destination);
 
@@ -125,7 +125,7 @@ void staffAdd() {
         rewind(stdin);
         scanf("%lf", &ticket.price);
 
-        printf("Confirm ticket (y/n)? ");
+        printf("\nConfirm ticket (y/n)? ");
         rewind(stdin);
         char confirm = tolower(getchar());
 
@@ -170,34 +170,38 @@ void staffEdit() {
         rewind(stdin);
         scanf("%d", &id);
 
-        for (int i = 0; i < count; i++) {
-            if (i == id - 1) {
-                printf("\nEnter destination (eg. Kuala Lumpur): ");
-                rewind(stdin);
-                gets(destination);
+        if (id > count) {
+            printf("\nNo record found!\n");
+        } else {
+            for (int i = 0; i < count; i++) {
+                if (i == id - 1) {
+                    printf("\nEnter destination (eg. Kuala Lumpur): ");
+                    rewind(stdin);
+                    gets(destination);
 
-                printf("Enter train ID (eg. T1001): ");
-                rewind(stdin);
-                gets(trainID);
+                    printf("Enter train ID (eg. T1001): ");
+                    rewind(stdin);
+                    gets(trainID);
 
-                printf("Enter departure date (eg. 21/01/2024): ");
-                rewind(stdin);
-                gets(departureDate);
+                    printf("Enter departure date (eg. 21/01/2024): ");
+                    rewind(stdin);
+                    gets(departureDate);
 
-                printf("Enter price (eg. 100.00): ");
-                rewind(stdin);
-                scanf("%lf", &price);
+                    printf("Enter price (eg. 100.00): ");
+                    rewind(stdin);
+                    scanf("%lf", &price);
 
-                printf("Confirm update (y/n)? ");
-                rewind(stdin);
-                char confirm = tolower(getchar());
-                if (confirm == 'y') {
-                    strcpy(ticket[i].destination, destination);
-                    strcpy(ticket[i].trainID, trainID);
-                    strcpy(ticket[i].departureDate, departureDate);
-                    ticket[i].price = price;
-                } else {
-                    printf("Update cancelled!");
+                    printf("Confirm update (y/n)? ");
+                    rewind(stdin);
+                    char confirm = tolower(getchar());
+                    if (confirm == 'y') {
+                        strcpy(ticket[i].destination, destination);
+                        strcpy(ticket[i].trainID, trainID);
+                        strcpy(ticket[i].departureDate, departureDate);
+                        ticket[i].price = price;
+                    } else {
+                        printf("\nUpdate cancelled!\n");
+                    }
                 }
             }
         }
@@ -218,7 +222,60 @@ void staffEdit() {
 }
 
 void staffDelete() {
-    printf("\nUnder construction!\n");
+    char prompt;
+    do {
+        struct Ticket ticket[50];
+
+        FILE *ptr = fopen("tickets.txt", "r");
+        if (ptr == NULL) {
+            printf("An error occurred, please try again!\n");
+            exit(-1);
+        }
+
+        int count = 0;
+        while (fscanf(ptr, "%[^|]|%[^|]|%[^|]|%lf\n", &ticket[count].destination, &ticket[count].trainID, &ticket[count].departureDate, &ticket[count].price) != EOF) {
+            count++;
+        }
+        fclose(ptr);
+
+        staffView();
+
+        int id;
+
+        printf("\nEnter No. to delete: ");
+        rewind(stdin);
+        scanf("%d", &id);
+
+        if (id > count) {
+            printf("\nNo record found!\n");
+
+        } else {
+            FILE *ptrDelete = fopen("tickets.txt", "w");
+
+            for (int i = 0; i < count; i++) {
+                if (i == id - 1) {
+                    displayHeader();
+                    printf("%2d  %-15s %-10s %-15s %.2lf\n", id, ticket[i].destination, ticket[i].trainID, ticket[i].departureDate, ticket[i].price);
+
+                    printf("\nConfirm delete (y/n)? ");
+                    rewind(stdin);
+                    char confirm = tolower(getchar());
+                    if (confirm == 'y') {
+                    } else {
+                        printf("\nUpdate cancelled!\n");
+                        fprintf(ptr, "%s|%s|%s|%.2lf\n", ticket[i].destination, ticket[i].trainID, ticket[i].departureDate, ticket[i].price);
+                    }
+                } else {
+                    fprintf(ptr, "%s|%s|%s|%.2lf\n", ticket[i].destination, ticket[i].trainID, ticket[i].departureDate, ticket[i].price);
+                }
+            }
+            fclose(ptrDelete);
+        }
+
+        printf("\nContinue deleting (y/n)? ");
+        rewind(stdin);
+        prompt = tolower(getchar());
+    } while (prompt == 'y');
 }
 
 void member() {
