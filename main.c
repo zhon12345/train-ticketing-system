@@ -2,6 +2,7 @@
 #include<stdlib.h>
 #pragma warning(disable:4996)
 
+void staffMain();
 void modeSelection();
 void staffLogin();
 void staffInformation();
@@ -16,6 +17,13 @@ typedef struct {
 	int age;
 }staff;
 
+void staffMain()
+{
+	printf("_____Welcome to Adminstration Page._____\n");
+	staffLogin();
+	modeSelection();
+
+}
 void modeSelection() 
 {
 	int choice;
