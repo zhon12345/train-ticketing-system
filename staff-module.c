@@ -2,6 +2,8 @@
 #include<stdlib.h>
 #pragma warning(disable:4996)
 
+#define size 100
+
 void staffMain();
 void modeSelection();
 void staffLogin();
@@ -22,7 +24,6 @@ void staffMain()
 	printf("_____Welcome to Adminstration Page._____\n");
 	staffLogin();
 	modeSelection();
-	
 }
 void modeSelection() 
 {
@@ -104,6 +105,13 @@ void staffLogin()
     }
 }
 
+void staffInformation()
+{
+	printf("Staff Information\n");
+	printf("");
+
+};
+
 void staffAdd()
 {
 	Staff info[size];
@@ -159,3 +167,31 @@ void staffAdd()
 
 	fclose(fptr);
 }
+
+void staffDisplay()
+{
+	
+	printf("Employee Display\n");
+	while (1)
+	{
+		printf("");
+		if ()break;
+	}
+	
+}
+
+void staffModify()
+{
+
+}
+ 
+void staffDelete()
+{
+
+}
+
+void staffPassRecovery()
+{
+
+}
+
