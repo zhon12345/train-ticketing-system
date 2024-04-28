@@ -102,8 +102,6 @@ void staffLogin()
     else {
         printf("Invalid Employee ID or password.\n");
     }
-
-    return 0;
 }
 
 void staffAdd()
