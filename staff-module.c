@@ -20,8 +20,9 @@ typedef struct {
 void staffMain()
 {
 	printf("_____Welcome to Adminstration Page._____\n");
-	modeSelection();
 	staffLogin();
+	modeSelection();
+	
 }
 void modeSelection() 
 {
@@ -61,3 +62,102 @@ void modeSelection()
 		}
 	} while (choice != 6);
 };
+
+void staffLogin()
+{
+    FILE* file = fopen("staff.bin", "r");
+    if (file == NULL) {
+        printf("Error opening file");
+        return -1;
+    }
+
+    Staff staff[2];
+    int count = 0;
+
+    while (fscanf(file, "%s %s", staff[count].employeeID, staff[count].password) == 2) {
+        count++;
+        if (count >= 2) {
+            break;
+        }
+    }
+    fclose(file);
+
+    char enteredID[10], enteredPassword[20];
+    printf("Enter your Employee ID: ");
+    scanf("%s", enteredID);
+    printf("Enter your password: ");
+    scanf("%s", enteredPassword);
+
+    int i, isAuthenticated = 0;
+    for (i = 0; i < count; i++) {
+        if (strcmp(enteredID, staff[i].employeeID) == 0 && strcmp(enteredPassword, staff[i].password) == 0) {
+            isAuthenticated = 1;
+            break;
+        }
+    }
+
+    if (isAuthenticated) {
+        printf("Login successful. Welcome, %s!\n", staff[i].employeeName);
+    }
+    else {
+        printf("Invalid Employee ID or password.\n");
+    }
+
+    return 0;
+}
+
+void staffAdd()
+{
+	Staff info[size];
+	FILE * fptr;
+	fptr = fopen("employeeInfo.txt", "a");
+	int i = 0;
+
+	if (fptr == NULL)
+	{
+		printf("Error opening file.");
+		exit(-1);
+	}
+
+	char nextEmployee;
+
+	do {
+
+		printf("Enter employee ID:");
+		rewind(stdin);
+		scanf("%[^\n]", &info[i].employeeID);
+
+		printf("Enter employee name:");
+		rewind(stdin);
+		scanf("%[^\n]", &info[i].employeeName);
+
+		printf("Enter employee gender:");
+		rewind(stdin);
+		scanf("%c", &info[i].gender);
+
+		printf("Enter employee age:");
+		rewind(stdin);
+		scanf("%d", &info[i].age);
+
+		printf("Enter your password etc(john123):");
+		rewind(stdin);
+		scanf("%[^\n]", &info[i].password);
+
+		printf("Enter your position:");
+		rewind(stdin);
+		scanf("%[^\n]", &info[i].position);
+
+		fprintf(fptr, "%s %s %c %d %s %s\n", info[i].employeeID, info[i].employeeName, info[i].gender, info[i].age, info[i].password, info[i].position);
+		printf("\n");	
+		printf("Employee added sucessfully!\n");
+		printf("\n");
+		printf("Next employee?( Y for yes N for no ): ");
+		rewind(stdin);
+		scanf("%c", &nextEmployee);
+
+		nextEmployee = toupper(nextEmployee);
+
+	} while (nextEmployee == 'Y');
+
+	fclose(fptr);
+}
