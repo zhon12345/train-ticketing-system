@@ -8,35 +8,35 @@ struct Ticket {
     char destination[50];
     char trainID[6];
     char departureDate[11];
+    char departureTime[6];
     double price;
 };
 
-struct MemberTickets {
+typedef struct {
     char bookingID[6];
-    char memberID[6];
+    char memberID[7];
     char bookingDate[11];
     struct Ticket ticket;
-    char *seats[4];
+    char seats[4][5];
     int quantity;
     double total;
     char status[20];
-};
+} MemberTickets;
 
 void staff();
-void staffView();
 void staffAdd();
 void staffEdit();
 void staffDelete();
 
 void member();
-void memberBuy();
-void memberView();
+void memberBuy(char memberID[7]);
+void memberView(char memberID[7]);
 void memberEdit();
 void memberCancel();
 
-void displayHeader();
-char generateRandomChar();
-void generateBookingID(char *);
+void generateID(char, int, char *);
+void ticketHeader();
+void displayTickets();
 
 void main() {
     int choice;
@@ -72,7 +72,7 @@ void staff() {
 
         switch (choice) {
             case 1:
-                staffView();
+                displayTickets();
                 break;
             case 2:
                 staffAdd();
@@ -90,7 +90,7 @@ void staff() {
     } while (choice != 5);
 }
 
-void staffView() {
+void displayTickets() {
     struct Ticket ticket;
     FILE *ptrView = fopen("tickets.txt", "r");
     if (ptrView == NULL) {
@@ -101,13 +101,13 @@ void staffView() {
     displayHeader();
 
     int count = 0;
-    while (fscanf(ptrView, "%[^|]|%[^|]|%[^|]|%lf\n", &ticket.destination, &ticket.trainID, &ticket.departureDate, &ticket.price) != EOF) {
+    while (fscanf(ptrView, "%[^|]|%[^|]|%[^|]|%[^|]|%lf\n", &ticket.destination, &ticket.trainID, &ticket.departureDate, &ticket.departureTime, &ticket.price) != EOF) {
         count++;
-        printf("%2d  %-15s %-10s %-15s %.2lf\n", count, ticket.destination, ticket.trainID, ticket.departureDate, ticket.price);
+        printf("%-3d %-15s %-10s %-15s %-15s %.2lf\n", count, ticket.destination, ticket.trainID, ticket.departureDate, ticket.departureTime, ticket.price);
     }
 
     if (count == 0) {
-        printf("No records found.\n");
+        printf("No records found.\n\n");
     }
     fclose(ptrView);
 }
@@ -134,6 +134,10 @@ void staffAdd() {
         printf("Enter departure date (eg. 21/01/2024): ");
         rewind(stdin);
         gets(ticket.departureDate);
+
+        printf("Enter departure time (eg. 07:00): ");
+        rewind(stdin);
+        gets(ticket.departureTime);
 
         printf("Enter price (eg. 100.00): ");
         rewind(stdin);
@@ -174,11 +178,11 @@ void staffEdit() {
 
     char prompt;
     do {
-        char destination[50], trainID[6], departureDate[11];
+        char destination[50], trainID[6], departureDate[11], departureTime[6];
         double price;
         int id;
 
-        staffView();
+        displayTickets();
 
         printf("\nEnter No. to edit (0 to exit): ");
         rewind(stdin);
@@ -203,6 +207,10 @@ void staffEdit() {
             rewind(stdin);
             gets(departureDate);
 
+            printf("Enter departure time (eg. 07:00): ");
+            rewind(stdin);
+            gets(departureTime);
+
             printf("Enter price (eg. 100.00): ");
             rewind(stdin);
             scanf("%lf", &price);
@@ -214,6 +222,7 @@ void staffEdit() {
                 strcpy(ticket[id - 1].destination, destination);
                 strcpy(ticket[id - 1].trainID, trainID);
                 strcpy(ticket[id - 1].departureDate, departureDate);
+                strcpy(ticket[id - 1].departureTime, departureTime);
                 ticket[id - 1].price = price;
             } else {
                 printf("\nUpdate cancelled!\n");
@@ -236,6 +245,7 @@ void staffEdit() {
 
 void staffDelete() {
     char prompt;
+    int id;
     do {
         struct Ticket ticket[50];
 
@@ -251,41 +261,37 @@ void staffDelete() {
         }
         fclose(ptr);
 
-        staffView();
-
-        int id;
+        displayTickets();
 
         printf("\nEnter No. to delete (0 to exit): ");
         rewind(stdin);
         scanf("%d", &id);
 
-        if (id == 0) {
-            break;
-        }
-
-        if (id < 0 || id > count) {
-            printf("\nNo record found!\n");
-        } else {
-            FILE *ptrDelete = fopen("tickets.txt", "w");
-
-            displayHeader();
-            printf("%2d  %-15s %-10s %-15s %.2lf\n", id, ticket[id - 1].destination, ticket[id - 1].trainID, ticket[id - 1].departureDate, ticket[id - 1].price);
-
-            printf("\nConfirm delete (y/n)? ");
-            rewind(stdin);
-            char confirm = tolower(getchar());
-            if (confirm == 'y') {
+        if (id != 0) {
+            if (id < 0 || id > count) {
+                printf("\nNo record found!\n");
             } else {
-                printf("\nUpdate cancelled!\n");
-                fprintf(ptr, "%s|%s|%s|%.2lf\n", ticket[id - 1].destination, ticket[id - 1].trainID, ticket[id - 1].departureDate, ticket[id - 1].price);
+                FILE *ptrDelete = fopen("tickets.txt", "w");
+
+                ticketHeader();
+                printf("%2d  %-15s %-10s %-15s %.2lf\n", id, ticket[id - 1].destination, ticket[id - 1].trainID, ticket[id - 1].departureDate, ticket[id - 1].price);
+
+                printf("\nConfirm delete (y/n)? ");
+                rewind(stdin);
+                char confirm = tolower(getchar());
+                if (confirm == 'y') {
+                } else {
+                    printf("\nUpdate cancelled!\n");
+                    fprintf(ptr, "%s|%s|%s|%.2lf\n", ticket[id - 1].destination, ticket[id - 1].trainID, ticket[id - 1].departureDate, ticket[id - 1].price);
+                }
+                fclose(ptrDelete);
             }
-            fclose(ptrDelete);
         }
 
         printf("\nContinue deleting (y/n)? ");
         rewind(stdin);
         prompt = tolower(getchar());
-    } while (prompt == 'y');
+    } while (prompt == 'y' || id == 0);
 }
 
 void member() {
@@ -296,10 +302,10 @@ void member() {
 
         switch (choice) {
             case 1:
-                memberBuy();
+                memberBuy("M12345");
                 break;
             case 2:
-                memberView();
+                memberView("M12345");
                 break;
             default:
                 printf("\nInvalid option!\n");
@@ -308,104 +314,109 @@ void member() {
     } while (choice != 3);
 }
 
-void memberBuy() {
+void memberBuy(char memberID[7]) {
     struct Ticket ticket[50];
-    struct MemberTickets memberTicket;
+    MemberTickets memberTicket;
 
-    time_t now = time(NULL);
-    struct tm *local = localtime(&now);
-
-    int day, month, year;
-    char date[11];
-
-    day = local->tm_mday;
-    month = local->tm_mon + 1;
-    year = local->tm_year + 1900;
-
-    sprintf(date, "%02d/%02d/%d", day, month, year);
-
-    staffView();
+    displayTickets();
 
     FILE *ptrView = fopen("tickets.txt", "r");
-    FILE *ptrWrite = fopen("memberTickets.txt", "a+");
 
-    if (ptrView == NULL || ptrWrite == NULL) {
+    if (ptrView == NULL) {
         printf("An error occurred, please try again!\n");
         exit(-1);
     }
 
     int count = 0;
-    while (fscanf(ptrView, "%[^|]|%[^|]|%[^|]|%lf\n", &ticket[count].destination, &ticket[count].trainID, &ticket[count].departureDate, &ticket[count].price) != EOF) {
+    while (fscanf(ptrView, "%[^|]|%[^|]|%[^|]|%[^|]|%lf\n", &ticket[count].destination, &ticket[count].trainID, &ticket[count].departureDate, &ticket[count].departureTime, &ticket[count].price) != EOF) {
         count++;
     }
     fclose(ptrView);
 
-    int id;
+    if (count > 0) {
+        int id;
 
-    printf("\nEnter ID of ticket you'd like to buy: ");
-    rewind(stdin);
-    scanf("%d", &id);
-
-    if (id < 1 || id > count) {
-        printf("\nNo record found!\n");
-    } else {
-        printf("Enter quantity of tickets to buy: ");
+        printf("\nEnter ID of ticket you'd like to buy: ");
         rewind(stdin);
-        scanf("%d", &memberTicket.quantity);
+        scanf("%d", &id);
 
-        memberTicket.total = ticket[id - 1].price * memberTicket.quantity;
+        if (id < 1 || id > count) {
+            printf("\nNo record found!\n");
+        } else {
+            do {
+                printf("Enter quantity of tickets to buy (max 5): ");
+                rewind(stdin);
+                scanf("%d", &memberTicket.quantity);
+            } while (memberTicket.quantity > 5);
 
-        char confirm;
-        printf("\nGrand total: %.2lf\n", memberTicket.total);
-        printf("Proceed (y/n)? ");
-        rewind(stdin);
-        confirm = tolower(getchar());
+            memberTicket.total = ticket[id - 1].price * memberTicket.quantity;
 
-        if (confirm == 'y') {
-            generateBookingID(memberTicket.bookingID);
-            strcpy(memberTicket.memberID, "M7890");
-            memberTicket.ticket = ticket[id - 1];
-            strcpy(memberTicket.bookingDate, date);
+            char confirm;
+            printf("\nGrand total: %.2lf\n", memberTicket.total);
+            printf("Proceed (y/n)? ");
+            rewind(stdin);
+            confirm = tolower(getchar());
 
-            for (int i = 0; i < memberTicket.quantity; i++) {
-                char coach;
-                int seat;
+            if (confirm == 'y') {
+                FILE *ptrWrite = fopen("memberTickets.txt", "a+");
 
-                do {
-                    printf("Enter desired seat for ticket %d (coach: A-F, seat: 1-48) eg. A14: ", i + 1);
-                    rewind(stdin);
-                    scanf("%c%d", &coach, &seat);
+                time_t now = time(NULL);
+                struct tm *local = localtime(&now);
 
-                    coach = toupper(coach);
-                } while ((coach < 'A' || coach > 'F') || (seat < 1 || seat > 48));
+                int day, month, year;
+                char date[11];
 
-                sprintf(memberTicket.seats[i], "%c%02d", coach, seat);
-            }
+                day = local->tm_mday;
+                month = local->tm_mon + 1;
+                year = local->tm_year + 1900;
 
-            strcpy(memberTicket.status, "Booked");
+                sprintf(date, "%02d/%02d/%d", day, month, year);
 
-            fprintf(ptrWrite, "%s|%s|%s|%s|%s|%s|", memberTicket.memberID, memberTicket.bookingID, memberTicket.ticket.destination, memberTicket.ticket.trainID, memberTicket.bookingDate, memberTicket.ticket.departureDate);
+                generateID('B', 5, memberTicket.bookingID);
+                memberTicket.ticket = ticket[id - 1];
 
-            for (int i = 0; i < memberTicket.quantity; i++) {
-                fprintf(ptrWrite, "%s", memberTicket.seats[i]);
-                if (i < memberTicket.quantity - 1) {
-                    fprintf(ptrWrite, ",");
+                strcpy(memberTicket.bookingDate, date);
+
+                for (int i = 0; i < memberTicket.quantity; i++) {
+                    char coach;
+                    int seat;
+
+                    do {
+                        printf("\nEnter desired seat for ticket %d (coach: A-F, seat: 1-48) eg. A14: ", i + 1);
+                        rewind(stdin);
+                        scanf("%c%d", &coach, &seat);
+
+                        coach = toupper(coach);
+                    } while ((coach < 'A' || coach > 'F') || (seat < 1 || seat > 48));
+
+                    sprintf(memberTicket.seats[i], "%c%02d", coach, seat);
                 }
+
+                strcpy(memberTicket.status, "Booked");
+
+                fprintf(ptrWrite, "%s|%s|%s|%s|%s|%s|", memberID, memberTicket.bookingID, memberTicket.ticket.destination, memberTicket.ticket.trainID, memberTicket.ticket.departureDate, memberTicket.ticket.departureTime, memberTicket.bookingDate);
+
+                for (int i = 0; i < memberTicket.quantity; i++) {
+                    fprintf(ptrWrite, "%s", memberTicket.seats[i]);
+                    if (i < memberTicket.quantity - 1) {
+                        fprintf(ptrWrite, ",");
+                    }
+                }
+
+                fprintf(ptrWrite, "|%d|%.2lf|%s\n", memberTicket.quantity, memberTicket.total, memberTicket.status);
+
+                printf("Booking Successful!\n");
+                fclose(ptrWrite);
             }
-
-            fprintf(ptrWrite, "|%d|%.2lf|%s\n", memberTicket.quantity, memberTicket.total, memberTicket.status);
         }
-
-        fclose(ptrWrite);
-        free(memberTicket.seats);
     }
 }
 
-void memberView(char memberID[6]) {
-    struct MemberTickets memberTicket;
+void memberView(char memberID[7]) {
+    MemberTickets memberTicket;
 
-    printf("\n%-10s %-15s %-10s %-10s %-15s %-15s %-10s %s\n", "Booking ID", "Destination", "Train ID", "Seat(s)", "Departure Date", "Booking Date", "Total", "Status");
-    printf("%-10s %-15s %-10s %-10s %-15s %-15s %-10s %s\n", "==========", "===============", "==========", "==========", "===============", "===============", "==========", "==========");
+    printf("\n%-15s %-15s %-10s %-10s %-15s %-15s %-15s %-10s %s\n", "Booking ID", "Destination", "Train ID", "Seat(s)", "Departure Date", "Departure Time", "Booking Date", "Total", "Status");
+    printf("========================================================================================================================\n");
 
     FILE *ptr = fopen("memberTickets.txt", "r");
     if (ptr == NULL) {
@@ -413,14 +424,36 @@ void memberView(char memberID[6]) {
         exit(-1);
     }
 
-    while (fscanf(ptr, "%[^|]|%[^|]|%[^|]|%[^|]|%[^|]|%[^|]|%[^|]|%[^|]|%lf|%s\n", &memberTicket.memberID, &memberTicket.bookingID, &memberTicket.ticket.destination, &memberTicket.ticket.trainID, &memberTicket.bookingDate, &memberTicket.ticket.departureDate, &memberTicket.seats, &memberTicket.quantity, &memberTicket.total, &memberTicket.status) != EOF) {
+    while (fscanf(ptr, "%[^|]|%[^|]|%[^|]|%[^|]|%[^|]|%[^|]|%[^|]|%[^|]|%[^|]|%lf|%s\n", &memberTicket.memberID, &memberTicket.bookingID, &memberTicket.ticket.destination, &memberTicket.ticket.trainID, &memberTicket.ticket.departureDate, &memberTicket.ticket.departureTime, &memberTicket.bookingDate, &memberTicket.seats, &memberTicket.quantity, &memberTicket.total, &memberTicket.status) != EOF) {
         if (strcmp(memberTicket.memberID, memberID) == 0) {
-            printf("%-10s %-15s %-10s %-10s %-15s %-15s %-10.2lf %s\n", memberTicket.bookingID, memberTicket.ticket.destination, memberTicket.ticket.trainID, memberTicket.seats, memberTicket.ticket.departureDate, memberTicket.bookingDate, memberTicket.total, memberTicket.status);
+            printf("%-15s %-15s %-10s %-10s %-15s %-15s %-15s %-10.2lf %s\n", memberTicket.bookingID, memberTicket.ticket.destination, memberTicket.ticket.trainID, memberTicket.seats, memberTicket.ticket.departureDate, memberTicket.ticket.departureTime, memberTicket.bookingDate, memberTicket.total, memberTicket.status);
         } else {
             printf("No records found.\n");
         }
     }
     fclose(ptr);
+    int choice;
+    do {
+        printf("\nWhat would you like to do? \n\n");
+        printf("1. Change Time\n2. Cancel Ticket\n3. Back\n\n");
+
+        printf("Enter option: ");
+        rewind(stdin);
+        scanf("%d", &choice);
+
+        switch (choice) {
+            case 1:
+                break;
+            case 2:
+                break;
+            case 3:
+                break;
+            default:
+                printf("\nInvalid option!\n");
+                system("pause");
+                break;
+        }
+    } while (choice != 3);
 }
 
 void memberEdit() {
@@ -432,20 +465,15 @@ void memberCancel() {
 }
 
 void displayHeader() {
-    printf("\n%-3s %-15s %-10s %-15s %s\n", "ID", "Destination", "Train ID", "Departure Date", "Price");
-    printf("%-3s %-15s %-10s %-15s %s\n", "===", "===============", "==========", "===============", "==========");
+    printf("\n%-3s %-15s %-10s %-15s %-15s %s\n", "ID", "Destination", "Train ID", "Departure Date", "Departure Time", "Price");
+    printf("=======================================================================\n");
 }
 
-char generateRandomChar() {
-    const char charset[] = "0123456789";
-    const int charset_size = strlen(charset);
-    return charset[rand() % charset_size];
-}
-
-void generateBookingID(char *id) {
-    id[0] = 'B';
-    for (int i = 1; i < 5; i++) {
-        id[i] = generateRandomChar();
+void generateID(char head, int length, char *id) {
+    id[0] = head;
+    srand(time(NULL));
+    for (int i = 1; i < length; i++) {
+        id[i] = '0' + rand() % 10;
     }
-    id[5] = '\0';
+    id[length] = '\0';
 }
