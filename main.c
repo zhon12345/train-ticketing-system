@@ -24,6 +24,7 @@ typedef struct {
 } MemberTickets;
 
 void staff();
+void staffView();
 void staffAdd();
 void staffEdit();
 void staffDelete();
@@ -72,7 +73,7 @@ void staff() {
 
         switch (choice) {
             case 1:
-                displayTickets();
+                staffView();
                 break;
             case 2:
                 staffAdd();
@@ -90,26 +91,38 @@ void staff() {
     } while (choice != 5);
 }
 
-void displayTickets() {
+void staffView() {
     struct Ticket ticket;
-    FILE *ptrView = fopen("tickets.txt", "r");
-    if (ptrView == NULL) {
+    char keyword[50], destination[50];
+    int found = 0, count = 1;
+
+    displayTickets();
+
+    printf("\nEnter keyword to search: ");
+    rewind(stdin);
+    tolower(gets(keyword));
+
+    FILE *ptrSearch = fopen("tickets.txt", "r");
+    if (ptrSearch == NULL) {
         printf("An error occurred, please try again!\n");
-        exit(-1);
+        return;
     }
 
     displayHeader();
-
-    int count = 0;
-    while (fscanf(ptrView, "%[^|]|%[^|]|%[^|]|%[^|]|%lf\n", &ticket.destination, &ticket.trainID, &ticket.departureDate, &ticket.departureTime, &ticket.price) != EOF) {
-        count++;
-        printf("%-3d %-15s %-10s %-15s %-15s %.2lf\n", count, ticket.destination, ticket.trainID, ticket.departureDate, ticket.departureTime, ticket.price);
+    while (fscanf(ptrSearch, "%[^|]|%[^|]|%[^|]|%[^|]|%lf\n", &ticket.destination, &ticket.trainID, &ticket.departureDate, &ticket.departureTime, &ticket.price) != EOF) {
+        strcpy(destination, ticket.destination);
+        if (strcmp(strlwr(destination), keyword) == 0) {
+            printf("%-3d %-15s %-10s %-15s %-15s %.2lf\n", count++, ticket.destination, ticket.trainID, ticket.departureDate, ticket.departureTime, ticket.price);
+            found = 1;
+        }
     }
 
-    if (count == 0) {
-        printf("No records found.\n\n");
+    if (!found) {
+        printf("No results found!\n");
+    } else {
+        printf("\n%d result(s) found.\n", count);
     }
-    fclose(ptrView);
+    fclose(ptrSearch);
 }
 
 void staffAdd() {
@@ -535,6 +548,28 @@ void memberTickets(char memberID[7], int showCancelled) {
 void displayHeader() {
     printf("\n%-3s %-15s %-10s %-15s %-15s %s\n", "ID", "Destination", "Train ID", "Departure Date", "Departure Time", "Price");
     printf("=======================================================================\n");
+}
+
+void displayTickets() {
+    struct Ticket ticket;
+    FILE *ptrView = fopen("tickets.txt", "r");
+    if (ptrView == NULL) {
+        printf("An error occurred, please try again!\n");
+        exit(-1);
+    }
+
+    displayHeader();
+
+    int count = 0;
+    while (fscanf(ptrView, "%[^|]|%[^|]|%[^|]|%[^|]|%lf\n", &ticket.destination, &ticket.trainID, &ticket.departureDate, &ticket.departureTime, &ticket.price) != EOF) {
+        count++;
+        printf("%-3d %-15s %-10s %-15s %-15s %.2lf\n", count, ticket.destination, ticket.trainID, ticket.departureDate, ticket.departureTime, ticket.price);
+    }
+
+    if (count == 0) {
+        printf("No records found.\n\n");
+    }
+    fclose(ptrView);
 }
 
 void generateID(char head, int length, char *id) {
