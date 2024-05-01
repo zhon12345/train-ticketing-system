@@ -32,10 +32,11 @@ void member();
 void memberBuy(char memberID[7]);
 void memberView(char memberID[7]);
 void memberEdit();
-void memberCancel();
+void memberCancel(char memberID[7]);
+void memberTickets(char memberID[7], int);
 
 void generateID(char, int, char *);
-void ticketHeader();
+void displayHeader();
 void displayTickets();
 
 void main() {
@@ -48,7 +49,6 @@ void main() {
             case 1:
                 staff();
                 break;
-
             case 2:
                 member();
                 break;
@@ -273,7 +273,7 @@ void staffDelete() {
             } else {
                 FILE *ptrDelete = fopen("tickets.txt", "w");
 
-                ticketHeader();
+                displayHeader();
                 printf("%2d  %-15s %-10s %-15s %.2lf\n", id, ticket[id - 1].destination, ticket[id - 1].trainID, ticket[id - 1].departureDate, ticket[id - 1].price);
 
                 printf("\nConfirm delete (y/n)? ");
@@ -377,12 +377,14 @@ void memberBuy(char memberID[7]) {
 
                 strcpy(memberTicket.bookingDate, date);
 
+                printf("\n");
+
                 for (int i = 0; i < memberTicket.quantity; i++) {
                     char coach;
                     int seat;
 
                     do {
-                        printf("\nEnter desired seat for ticket %d (coach: A-F, seat: 1-48) eg. A14: ", i + 1);
+                        printf("Enter desired seat for ticket %d (coach: A-F, seat: 1-48) eg. A14: ", i + 1);
                         rewind(stdin);
                         scanf("%c%d", &coach, &seat);
 
@@ -394,7 +396,7 @@ void memberBuy(char memberID[7]) {
 
                 strcpy(memberTicket.status, "Booked");
 
-                fprintf(ptrWrite, "%s|%s|%s|%s|%s|%s|", memberID, memberTicket.bookingID, memberTicket.ticket.destination, memberTicket.ticket.trainID, memberTicket.ticket.departureDate, memberTicket.ticket.departureTime, memberTicket.bookingDate);
+                fprintf(ptrWrite, "%s|%s|%s|%s|%s|%s|%s|", memberID, memberTicket.bookingID, memberTicket.ticket.destination, memberTicket.ticket.trainID, memberTicket.ticket.departureDate, memberTicket.ticket.departureTime, memberTicket.bookingDate);
 
                 for (int i = 0; i < memberTicket.quantity; i++) {
                     fprintf(ptrWrite, "%s", memberTicket.seats[i]);
@@ -413,25 +415,8 @@ void memberBuy(char memberID[7]) {
 }
 
 void memberView(char memberID[7]) {
-    MemberTickets memberTicket;
+    memberTickets(memberID, 1);
 
-    printf("\n%-15s %-15s %-10s %-10s %-15s %-15s %-15s %-10s %s\n", "Booking ID", "Destination", "Train ID", "Seat(s)", "Departure Date", "Departure Time", "Booking Date", "Total", "Status");
-    printf("========================================================================================================================\n");
-
-    FILE *ptr = fopen("memberTickets.txt", "r");
-    if (ptr == NULL) {
-        printf("An error occurred, please try again!\n");
-        exit(-1);
-    }
-
-    while (fscanf(ptr, "%[^|]|%[^|]|%[^|]|%[^|]|%[^|]|%[^|]|%[^|]|%[^|]|%[^|]|%lf|%s\n", &memberTicket.memberID, &memberTicket.bookingID, &memberTicket.ticket.destination, &memberTicket.ticket.trainID, &memberTicket.ticket.departureDate, &memberTicket.ticket.departureTime, &memberTicket.bookingDate, &memberTicket.seats, &memberTicket.quantity, &memberTicket.total, &memberTicket.status) != EOF) {
-        if (strcmp(memberTicket.memberID, memberID) == 0) {
-            printf("%-15s %-15s %-10s %-10s %-15s %-15s %-15s %-10.2lf %s\n", memberTicket.bookingID, memberTicket.ticket.destination, memberTicket.ticket.trainID, memberTicket.seats, memberTicket.ticket.departureDate, memberTicket.ticket.departureTime, memberTicket.bookingDate, memberTicket.total, memberTicket.status);
-        } else {
-            printf("No records found.\n");
-        }
-    }
-    fclose(ptr);
     int choice;
     do {
         printf("\nWhat would you like to do? \n\n");
@@ -443,8 +428,10 @@ void memberView(char memberID[7]) {
 
         switch (choice) {
             case 1:
+                memberEdit();
                 break;
             case 2:
+                memberCancel(memberID);
                 break;
             case 3:
                 break;
@@ -460,8 +447,89 @@ void memberEdit() {
     printf("\nUnder construction!\n");
 }
 
-void memberCancel() {
-    printf("\nUnder construction!\n");
+void memberCancel(char memberID[7]) {
+    MemberTickets memberTicket[50];
+    int count = 0, found = 0;
+    char bookingID[6];
+
+    FILE *ptr = fopen("memberTickets.txt", "r");
+    if (ptr == NULL) {
+        printf("An error occurred, please try again!\n");
+        exit(-1);
+    }
+
+    while (fscanf(ptr, "%[^|]|%[^|]|%[^|]|%[^|]|%[^|]|%[^|]|%[^|]|%[^|]|%d|%lf|%s\n", &memberTicket[count].memberID, &memberTicket[count].bookingID, &memberTicket[count].ticket.destination, &memberTicket[count].ticket.trainID, &memberTicket[count].ticket.departureDate, &memberTicket[count].ticket.departureTime, &memberTicket[count].bookingDate, &memberTicket[count].seats, &memberTicket[count].quantity, &memberTicket[count].total, &memberTicket[count].status) != EOF) {
+        count++;
+    }
+    fclose(ptr);
+
+    memberTickets(memberID, 0);
+
+    printf("\nEnter Booking ID of ticket to cancel: ");
+    scanf("%s", &bookingID);
+
+    for (int i = 0; i < count; i++) {
+        if (strcmp(memberTicket[i].bookingID, bookingID) == 0) {
+            if (strcmp(memberTicket[i].status, "Cancelled") != 0) {
+                printf("\n%-15s %-15s %-10s %-15s %-15s %-15s %-15s %-10s %s\n", "Booking ID", "Destination", "Train ID", "Seat(s)", "Departure Date", "Departure Time", "Booking Date", "Total", "Status");
+                printf("==================================================================================================================================\n");
+                printf("%-15s %-15s %-10s %-15s %-15s %-15s %-15s %-10.2lf %s\n", memberTicket[i].bookingID, memberTicket[i].ticket.destination, memberTicket[i].ticket.trainID, memberTicket[i].seats, memberTicket[i].ticket.departureDate, memberTicket[i].ticket.departureTime, memberTicket[i].bookingDate, memberTicket[i].total, memberTicket[i].status);
+
+                printf("\nConfirm cancellation (y/n)? ");
+                rewind(stdin);
+                char confirm = tolower(getchar());
+                if (confirm == 'y') {
+                    strcpy(memberTicket[i].status, "Cancelled");
+                    found = 1;
+                }
+            } else {
+                printf("Ticket has already been cancelled!\n");
+            }
+        }
+    }
+
+    if (!found) {
+        printf("No records found!\n");
+    } else {
+        ptr = fopen("memberTickets.txt", "w");
+        if (ptr == NULL) {
+            printf("An error occurred, please try again!\n");
+            exit(-1);
+        }
+
+        for (int i = 0; i < count; i++) {
+            fprintf(ptr, "%s|%s|%s|%s|%s|%s|%s|%s|%d|%.2lf|%s\n", memberTicket[i].memberID, memberTicket[i].bookingID, memberTicket[i].ticket.destination, memberTicket[i].ticket.trainID, memberTicket[i].ticket.departureDate, memberTicket[i].ticket.departureTime, memberTicket[i].bookingDate, memberTicket[i].seats, memberTicket[i].quantity, memberTicket[i].total, memberTicket[i].status);
+        }
+
+        fclose(ptr);
+        printf("Ticket cancellation successful.\n");
+    }
+}
+
+void memberTickets(char memberID[7], int showCancelled) {
+    MemberTickets memberTicket;
+    int found = 0;
+
+    printf("\n%-15s %-15s %-10s %-15s %-15s %-15s %-15s %-10s %s\n", "Booking ID", "Destination", "Train ID", "Seat(s)", "Departure Date", "Departure Time", "Booking Date", "Total", "Status");
+    printf("==================================================================================================================================\n");
+    FILE *ptr = fopen("memberTickets.txt", "r");
+    if (ptr == NULL) {
+        printf("An error occurred, please try again!\n");
+        exit(-1);
+    }
+
+    while (fscanf(ptr, "%[^|]|%[^|]|%[^|]|%[^|]|%[^|]|%[^|]|%[^|]|%[^|]|%d|%lf|%s\n", &memberTicket.memberID, &memberTicket.bookingID, &memberTicket.ticket.destination, &memberTicket.ticket.trainID, &memberTicket.ticket.departureDate, &memberTicket.ticket.departureTime, &memberTicket.bookingDate, &memberTicket.seats, &memberTicket.quantity, &memberTicket.total, &memberTicket.status) != EOF) {
+        if (strcmp(memberTicket.memberID, memberID) == 0 &&
+            (showCancelled || strcmp(memberTicket.status, "Cancelled") != 0)) {
+            printf("%-15s %-15s %-10s %-15s %-15s %-15s %-15s %-10.2lf %s\n", memberTicket.bookingID, memberTicket.ticket.destination, memberTicket.ticket.trainID, memberTicket.seats, memberTicket.ticket.departureDate, memberTicket.ticket.departureTime, memberTicket.bookingDate, memberTicket.total, memberTicket.status);
+            found = 1;
+        }
+    }
+    fclose(ptr);
+
+    if (!found) {
+        printf("No records found.\n");
+    }
 }
 
 void displayHeader() {
