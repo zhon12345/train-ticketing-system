@@ -1,13 +1,11 @@
 #include<stdio.h>
 #include<stdlib.h>
-#include<stdbool.h>
 #pragma warning(disable:4996)
 
 #define size 100
 
-void staffMain();
 void modeSelection();
-bool staffLogin();
+void staffLogin();
 void staffAdd();
 void staffDisplay();
 void staffModify();
@@ -19,7 +17,7 @@ typedef struct{
 	int age;
 }Staff;
 
-void staffMain()
+void main()
 {
 	printf("_____Welcome to Adminstration Page._____\n");
 	modeSelection();
@@ -47,9 +45,11 @@ void modeSelection()
 			staffDisplay();
 			break;
 		case 3:
+			staffLogin();
 			staffModify();
 			break;
 		case 4:
+			staffLogin();
 			staffDelete();
 			break;
 		case 5:
@@ -63,46 +63,44 @@ void modeSelection()
 	} while (choice != 6);
 };
 
-bool staffLogin() {
-	FILE* file = fopen("staff.bin", "rb");
+void staffLogin() 
+{
+	char username[10];
+	char password[20];
 
-	if (file == NULL) {
-		printf("Error opening file\n");
-		return false;
+	printf("Enter Employee ID: ");
+	scanf("%s", username);
+
+	printf("Password: ");
+	scanf("%s", password);
+
+	FILE * file;
+	errno_t err = fopen_s(&file, "staff.bin", "rb");
+
+	if (err != 0) {
+		printf("Error opening file!\n");
+		return -1;
 	}
 
-	Staff staff[size];
-	int count = 0;
+	Staff currentStaff;
+	int found = 0;
 
-	while (fscanf(file, "%s %s %s %s %s %c %d", staff[count].employeeID, staff[count].employeeName,
-		staff[count].password, staff[count].passRecovery, staff[count].position, &staff[count].gender, &staff[count].age) == 7) {
-		count++;
-	}
-
-	fclose(file);
-
-	char enteredID[10], enteredPassword[20];
-	printf("Enter your Employee ID: ");
-	scanf("%s", enteredID);
-	printf("Enter your password: ");
-	scanf("%s", enteredPassword);
-
-	bool isAuthenticated = false;
-	for (int i = 0; i < count; i++) {
-		if (strcmp(enteredID, staff[i].employeeID) == 0 && strcmp(enteredPassword, staff[i].password) == 0) {
-			isAuthenticated = true;
+	while (fread(&currentStaff, sizeof(Staff), 1, file) == 1) {
+		if (strcmp(currentStaff.employeeID, username) == 0 && strcmp(currentStaff.password, password) == 0) {
+			found = 1;
 			break;
 		}
 	}
 
-	if (isAuthenticated) {
-		printf("Login successful. Welcome, %s!\n", staff[i].employeeName);
-	}
-	else {
+	fclose(file);
+
+	if (found == 0) {
 		printf("Invalid Employee ID or password.\n");
+		return 0;
 	}
-	return isAuthenticated;
+	printf("Login successful. Welcome!\n");
 }
+
 
 void staffAdd() 
 {
@@ -114,27 +112,27 @@ void staffAdd()
 		exit(-1);
 	}
 
-	printf("Enter employee ID:");
+	printf("Enter new employee ID:");
 	rewind(stdin);
 	scanf("%[^\n]", &info.employeeID);
 
-	printf("Enter employee name:");
+	printf("Enter new employee name:");
 	rewind(stdin);
 	scanf("%[^\n]", &info.employeeName);
 
-	printf("Enter employee gender:");
+	printf("Enter new employee gender:");
 	rewind(stdin);
 	scanf(" %c", &info.gender); // Space before %c to avoid newline issues
 
-	printf("Enter employee age:");
+	printf("Enter new employee age:");
 	rewind(stdin);
 	scanf("%d", &info.age);
 
-	printf("Enter your password etc(john123):");
+	printf("Enter new password etc(john123):");
 	rewind(stdin);
 	scanf("%[^\n]", &info.password);
 
-	printf("Enter your position:");
+	printf("Enter your new position:");
 	rewind(stdin);
 	scanf("%[^\n]", &info.position);
 
@@ -150,50 +148,23 @@ void staffAdd()
 	fclose(fptr);
 }
 
-void staffDisplay() {
-	Staff info;
-	FILE* fptr = fopen("staff.bin", "ab");
+void staffDisplay()
+{
+		Staff info;
+		FILE* fptr = fopen("staff.bin", "rb");
 
-	if (fptr == NULL) {
-		printf("Error opening file.\n");
-		exit(-1);
-	}
+		if (fptr == NULL) {
+			printf("Error opening file.\n");
+			return;
+		}
 
-	printf("Enter employee ID:");
-	rewind(stdin);
-	scanf("%[^\n]", &info.employeeID);
+		printf("All Employee Display\n");
+		printf("EmployeeID | Employee Name | gender | age | Password | Position\n");
 
-	printf("Enter employee name:");
-	rewind(stdin);
-	scanf("%[^\n]", &info.employeeName);
-
-	printf("Enter employee gender:");
-	rewind(stdin);
-	scanf(" %c", &info.gender); 
-
-	printf("Enter employee age:");
-	rewind(stdin);
-	scanf("%d", &info.age);
-
-	printf("Enter your password etc(john123):");
-	rewind(stdin);
-	scanf("%[^\n]", &info.password);
-
-	printf("Enter your position:");
-	rewind(stdin);
-	scanf("%[^\n]", &info.position);
-
-	fwrite(&info, sizeof(Staff), 1, fptr);
-	if (ferror(fptr)) {
-		printf("Error writing to file.\n");
-	}
-	else {
-		printf("\n");
-		printf("Employee added sucessfully!\n");
-		printf("\n");
-	}
-
-	fclose(fptr);
+		while (fread(&info, sizeof(Staff), 1, fptr) == 1) {
+			printf(" %s\t\t%s\t\t%c\t%d\t%s\t%s\n", info.employeeID, info.employeeName, info.gender, info.age, info.password, info.position);
+		}
+		fclose(fptr);
 }
 
 void staffModify()
@@ -251,7 +222,7 @@ void staffModify()
 
 		printf("Employee details modified successfully.\n");
 	}
-	else	{
+	else{
 		printf("Employee not found.\n");
 	}
 	fclose(fptr);
@@ -307,3 +278,9 @@ void staffDelete()
 		printf("Employee not found.\n");
 	}
 }
+
+void staffPassRecovery()
+{
+	printf("Still in Development\n");
+}
+
