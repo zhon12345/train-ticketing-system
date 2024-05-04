@@ -147,21 +147,20 @@ void staffAdd()
 
 void staffDisplay()
 {
-		Staff info;
-		FILE* fptr = fopen("staff.bin", "rb");
+	Staff info;
+	FILE* fptr = fopen("staff.bin", "rb");
 
-		if (fptr == NULL) {
-			printf("Error opening file.\n");
-			return;
-		}
+	if (fptr == NULL) {
+		printf("Error opening file.\n");
+		return;
+	}
 
-		printf("\nAll Employee Display\n");
-		printf("EmployeeID|	Employee Name|	gender|	age	|Password	|Position	|\n");
-
-		while (fread(&info, sizeof(Staff), 1, fptr) == 1) {
-			printf(" %s\t\t%s\t\t%c\t%d\t%s\t\t%s\n\n", info.employeeID, info.employeeName, info.gender, info.age, info.password, info.position);
-		}
-		fclose(fptr);
+	printf("\nAll Employee Display\n");
+	printf("\n%-15s %-15s %-5s %-8s %s\n", "EmployeeID", "Employee Name", "Age", "Gender", "Position");
+	while (fread(&info, sizeof(Staff), 1, fptr) == 1) {
+		printf("%-15s %-15s %-5d %-8c %s\n\n", info.employeeID, info.employeeName, info.age, info.gender, info.position);
+	}
+	fclose(fptr);
 }
 
 void staffModify()
@@ -303,7 +302,7 @@ void staffPassRecovery()
 		}
 	}
 
-	if (found == 1) {
+	if (found) {
 		printf("Enter your new password: ");
 		rewind(stdin);
 		scanf("%[^\n]", &staff[i].password);
