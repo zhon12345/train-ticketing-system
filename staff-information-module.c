@@ -156,10 +156,10 @@ void staffDisplay()
 		}
 
 		printf("\nAll Employee Display\n");
-		printf("EmployeeID |  Employee Name  |  gender  |  age  |	Password  |   Position\n");
+		printf("EmployeeID|	Employee Name|	gender|	age	|Password	|Position	|\n");
 
 		while (fread(&info, sizeof(Staff), 1, fptr) == 1) {
-			printf(" %s\t\t%s\t\t%c\t%d\t%s\t%s\n\n", info.employeeID, info.employeeName, info.gender, info.age, info.password, info.position);
+			printf(" %s\t\t%s\t\t%c\t%d\t%s\t\t%s\n\n", info.employeeID, info.employeeName, info.gender, info.age, info.password, info.position);
 		}
 		fclose(fptr);
 }
