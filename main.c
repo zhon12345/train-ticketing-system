@@ -285,26 +285,13 @@ void displaySchedule() {
 void searchSchedule() {
     char searchID[MAX_TRAIN_ID_LENGTH];
     printf("Enter Train ID to search: ");
-    fgets(searchID, sizeof(searchID), stdin);
-    searchID[strcspn(searchID, "\n")] = '\0';
-
-    if (searchID[strlen(searchID) - 1] == '\n') {
-        searchID[strlen(searchID) - 1] = '\0';
-    }
-
-    char* trimmedSearchID = strtok(searchID, " \t"); 
-    while (trimmedSearchID != NULL) {
-        strcpy(searchID, trimmedSearchID); 
-        trimmedSearchID = strtok(NULL, " \t"); 
-    }
-
-    while (getchar() != '\n');
+    rewind(stdin);
+    gets(searchID);
 
     FILE* ptr = fopen("schedule.txt", "r");
     if (ptr == NULL) {
         printf("No schedules found!\n");
         printf("\nPress Enter to return to the main menu...");
-        while (getchar() != '\n');
         return;
     }
 
@@ -316,20 +303,12 @@ void searchSchedule() {
     struct TrainSchedule schedule;
     int found = 0;
     while (fscanf(ptr, "%[^|]|%[^|]|%[^|]|%[^|]|%[^\n]\n", schedule.trainID, schedule.departureStation, schedule.arrivalStation, schedule.departureTime, schedule.arrivalTime) != EOF) {
-        printf("Debug: Found train ID: '%s'\n", schedule.trainID); 
-
-        char* trimmedTrainID = strtok(schedule.trainID, " \t"); 
-        while (trimmedTrainID != NULL) {
-            if (strlen(trimmedTrainID) <= MAX_TRAIN_ID_LENGTH) { 
-                strcpy(schedule.trainID, trimmedTrainID);
-            }
-            trimmedTrainID = strtok(NULL, " \t"); 
-        }
+        printf(searchID);
 
         if (strcmp(schedule.trainID, searchID) == 0) {
             found = 1;
             printf("| %-8s | %-17s | %-14s | %-14s | %-12s | %-15d |\n", schedule.trainID, schedule.departureStation, schedule.arrivalStation, schedule.departureTime, schedule.arrivalTime, schedule.NumberOfSeats);
-            break; 
+            break;
         }
     }
     fclose(ptr);
@@ -339,8 +318,6 @@ void searchSchedule() {
 
     system("pause");
 }
-
-
 int main() {
     scheduleMenu();
     return 0;
