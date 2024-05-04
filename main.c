@@ -976,7 +976,7 @@ void searchTicket() {
 
     printf("\nEnter keyword to search: ");
     rewind(stdin);
-    tolower(gets(keyword));
+    strlwr(gets(keyword));
 
     FILE* ptrSearch = openFile("tickets.txt", "r");
 
@@ -1029,7 +1029,7 @@ void addTicket() {
         char confirm = tolower(getchar());
 
         if (confirm == 'y') {
-            fprintf(ptrAdd, "%s|%s|%s|%.2lf\n", ticket.destination, ticket.trainID, ticket.departureDate, ticket.price);
+            fprintf(ptrAdd, "%s|%s|%s|%s|%.2lf\n", ticket.destination, ticket.trainID, ticket.departureDate, ticket.departureTime, ticket.price);
         } else {
             printf("No changes made!\n");
         }
@@ -1047,7 +1047,7 @@ void editTicket() {
     FILE* ptrRead = openFile("tickets.txt", "r");
 
     int count = 0;
-    while (fscanf(ptrRead, "%[^|]|%[^|]|%[^|]|%lf\n", &ticket[count].destination, &ticket[count].trainID, &ticket[count].departureDate, &ticket[count].price) != EOF) {
+    while (fscanf(ptrRead, "%[^|]|%[^|]|%[^|]|%[^|]|%lf\n", &ticket[count].destination, &ticket[count].trainID, &ticket[count].departureDate, &ticket[count].departureTime, &ticket[count].price) != EOF) {
         count++;
     }
     fclose(ptrRead);
@@ -1097,6 +1097,8 @@ void editTicket() {
                     strcpy(ticket[id - 1].departureDate, departureDate);
                     strcpy(ticket[id - 1].departureTime, departureTime);
                     ticket[id - 1].price = price;
+
+                    printf("\nUpdate successful!\n");
                 } else {
                     printf("\nUpdate cancelled!\n");
                 }
@@ -1112,7 +1114,7 @@ void editTicket() {
     FILE* ptrWrite = openFile("tickets.txt", "w");
 
     for (int i = 0; i < count; i++) {
-        fprintf(ptrWrite, "%s|%s|%s|%.2lf\n", ticket[i].destination, ticket[i].trainID, ticket[i].departureDate, ticket[i].price);
+        fprintf(ptrWrite, "%s|%s|%s|%s|%.2lf\n", ticket[i].destination, ticket[i].trainID, ticket[i].departureDate, ticket[i].departureTime, ticket[i].price);
     }
 
     fclose(ptrWrite);
@@ -1143,16 +1145,23 @@ void deleteTicket() {
             } else {
                 FILE* ptrDelete = openFile("tickets.txt", "w");
 
-                ticketsHeader();
-                printf("%2d  %-15s %-10s %-15s %.2lf\n", id, ticket[id - 1].destination, ticket[id - 1].trainID, ticket[id - 1].departureDate, ticket[id - 1].price);
+                for (int i = 0; i < count; i++) {
+                    if (id - 1 == i) {
+                        ticketsHeader();
+                        printf("%-3d %-15s %-10s %-15s %-15s %.2lf\n", id, ticket[id - 1].destination, ticket[id - 1].trainID, ticket[id - 1].departureDate, ticket[id - 1].departureTime, ticket[id - 1].price);
 
-                printf("\nConfirm delete (y/n)? ");
-                rewind(stdin);
-                char confirm = tolower(getchar());
-                if (confirm == 'y') {
-                } else {
-                    printf("\nUpdate cancelled!\n");
-                    fprintf(ptrDelete, "%s|%s|%s|%.2lf\n", ticket[id - 1].destination, ticket[id - 1].trainID, ticket[id - 1].departureDate, ticket[id - 1].price);
+                        printf("\nConfirm delete (y/n)? ");
+                        rewind(stdin);
+                        char confirm = tolower(getchar());
+                        if (confirm == 'y') {
+                            printf("\nRecord deleted successfully\n");
+                        } else {
+                            printf("\nUpdate cancelled!\n");
+                            fprintf(ptrDelete, "%s|%s|%s|%s|%.2lf\n", ticket[i].destination, ticket[i].trainID, ticket[i].departureDate, ticket[i].departureTime, ticket[i].price);
+                        }
+                    } else {
+                        fprintf(ptrDelete, "%s|%s|%s|%s|%.2lf\n", ticket[i].destination, ticket[i].trainID, ticket[i].departureDate, ticket[i].departureTime, ticket[i].price);
+                    }
                 }
                 fclose(ptrDelete);
             }
