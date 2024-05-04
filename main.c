@@ -44,7 +44,7 @@ void cancelTicket(char);
 // Staff Functions
 void staff();
 void staffLogin();
-// void recoveryPass();
+void recoveryPass();
 
 void memberMenu();
 void displayMembers();
@@ -163,7 +163,7 @@ void staff() {
                 staffLogin();
                 break;
             case 2:
-                // recoverPass();
+                recoverPass();
                 break;
             case 3:
                 break;
@@ -233,6 +233,44 @@ void staffLogin() {
         system("pause");
     }
     fclose(file);
+}
+
+void recoverPass() {
+    Staff staff[SIZE];
+    int count = 0, i, found = 0;
+    char enteredID[10];
+
+    FILE* fptr = openFile("staff.bin", "rb+");
+
+    while (fread(&staff[count], sizeof(Staff), 1, fptr) == 1) {
+        count++;
+    }
+
+    printf("\nEnter the Employee ID to recover: ");
+    rewind(stdin);
+    scanf("%s", enteredID);
+
+    for (i = 0; i < count; i++) {
+        if (strcmp(staff[i].employeeID, enteredID) == 0) {
+            found = 1;
+            break;
+        }
+    }
+
+    if (found) {
+        printf("Enter your new password: ");
+        rewind(stdin);
+        scanf("%[^\n]", &staff[i].password);
+
+        fseek(fptr, i * sizeof(Staff), SEEK_SET);
+
+        fwrite(&staff[i], sizeof(Staff), 1, fptr);
+
+        printf("\nEmployee password changed successfully.\n\n");
+    } else {
+        printf("\nEmployee not found.\n\n");
+    }
+    fclose(fptr);
 }
 
 // Member Functions
@@ -802,9 +840,9 @@ void displayStaff() {
 
 void newStaff() {
     Staff info;
-    FILE* fptr = openFile("staff.bin", "ab");  // Open in binary append mode
+    FILE* fptr = openFile("staff.bin", "ab");
 
-    printf("Enter new employee ID:");
+    printf("\nEnter new employee ID:");
     rewind(stdin);
     scanf("%[^\n]", &info.employeeID);
 
@@ -814,13 +852,13 @@ void newStaff() {
 
     printf("Enter new employee gender:");
     rewind(stdin);
-    scanf(" %c", &info.gender);  // Space before %c to avoid newline issues
+    scanf(" %c", &info.gender);
 
     printf("Enter new employee age:");
     rewind(stdin);
     scanf("%d", &info.age);
 
-    printf("Enter new password etc(john123):");
+    printf("Enter new password exp (john123):");
     rewind(stdin);
     scanf("%[^\n]", &info.password);
 
@@ -850,7 +888,7 @@ void editStaff() {
         count++;
     }
 
-    printf("Enter the Employee ID to modify: ");
+    printf("\nEnter the Employee ID to modify: ");
     rewind(stdin);
     scanf("%s", enteredID);
 
@@ -886,9 +924,9 @@ void editStaff() {
 
         fwrite(&staff[i], sizeof(Staff), 1, fptr);
 
-        printf("Employee details modified successfully.\n");
+        printf("\nEmployee details modified successfully.\n");
     } else {
-        printf("Employee not found.\n");
+        printf("\nEmployee not found.\n");
     }
     fclose(fptr);
 }
@@ -905,7 +943,7 @@ void deleteStaff() {
     }
     fclose(fptr);
 
-    printf("Enter the Employee ID to delete: ");
+    printf("\nEnter the Employee ID to delete: ");
     rewind(stdin);
     scanf("%s", enteredID);
 
@@ -927,9 +965,9 @@ void deleteStaff() {
         fwrite(staff, sizeof(Staff), count, fptr);
         fclose(fptr);
 
-        printf("Employee deleted successfully.\n");
+        printf("\nEmployee deleted successfully.\n");
     } else {
-        printf("Employee not found.\n");
+        printf("\nEmployee not found.\n");
     }
 }
 
