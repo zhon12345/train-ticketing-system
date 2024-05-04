@@ -98,6 +98,7 @@ void staffLogin()
 
 		if (found == 0) {
 			printf("\nInvalid Employee ID or password.\n\n");
+			void modeSelection();
 		}
 		else
 		{ 
