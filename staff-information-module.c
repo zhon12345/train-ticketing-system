@@ -53,6 +53,7 @@ void modeSelection()
 			staffDelete();
 			break;
 		case 5:
+			staffLogin();
 			staffPassRecovery();
 			break;
 		case 6:
