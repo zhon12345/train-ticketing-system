@@ -213,7 +213,6 @@ void editSchedule() {
 void deleteSchedule() {
     char prompt;
     int id;
-
     do {
         struct TrainSchedule schedule[SIZE];
         FILE* ptr = fopen("schedule.txt", "r");
@@ -223,18 +222,17 @@ void deleteSchedule() {
         }
 
         int count = 0;
-        while (fscanf(ptr, "%[^|]|%[^|]|%[^|]|%[^|]|%[^|]|%d\n", schedule[count].trainID, schedule[count].departureStation, schedule[count].arrivalStation, schedule[count].departureTime, schedule[count].arrivalTime, &schedule[count].NumberOfSeats) != EOF) {
+        while (fscanf(ptr, "%[^|]|%[^|]|%[^|]|%[^|]|%[^|]|%d\n", &schedule[count].trainID, &schedule[count].departureStation, &schedule[count].arrivalStation, &schedule[count].departureTime, &schedule[count].arrivalTime, &schedule[count].NumberOfSeats) != EOF) {
             count++;
         }
         fclose(ptr);
 
         printf("\nEnter number row to delete (0 to exit): ");
-        while (getchar() != '\n'); // 清空输入缓冲区
         scanf("%d", &id);
 
         if (id != 0) {
-            if (id < 0 || id > count) {
-                printf("\nNo record found!\n");
+            if (id < 1 || id > count) {
+                printf("\nInvalid row number!\n");
             }
             else {
                 FILE* ptrDelete = fopen("temp_schedule.txt", "w");
@@ -245,17 +243,20 @@ void deleteSchedule() {
 
                 for (int i = 0; i < count; i++) {
                     if (id - 1 == i) {
-                        printf(" | % -8s | % -17s | % -14s | % -14s | % -12s | % -15d | \n", id, schedule[id - 1].trainID, schedule[id - 1].departureStation, schedule[id - 1].arrivalStation, schedule[id - 1].departureTime, schedule[id - 1].arrivalTime, schedule[id - 1].NumberOfSeats);
+                        printf("\nTrain Schedule\n");
+                        printf("----------------------------------------------------------------------------------------------------\n");
+                        printf("| Train ID | Departure Station | Arrival Station | Departure Time | Arrival Time | Available Seats |\n");
+                        printf("----------------------------------------------------------------------------------------------------\n");
+                        printf(" | %-8s | %-17s | %-14s | %-14s | %-12s | %-15d |\n", schedule[i].trainID, schedule[i].departureStation, schedule[i].arrivalStation, schedule[i].departureTime, schedule[i].arrivalTime, schedule[i].NumberOfSeats);
 
                         printf("\nConfirm delete (y/n)? ");
-                        char confirm;
-                        while ((confirm = getchar()) != '\n' && confirm != EOF); // 清空输入缓冲区
-                        confirm = tolower(confirm);
-                        if (confirm == 'y') {
+                        rewind(stdin);
+                        char confirm = getchar();
+                        if (confirm == 'y' || confirm == 'Y') {
                             printf("\nSchedule deleted successfully\n");
                         }
                         else {
-                            printf("\nSchedule not found.\n");
+                            printf("\nSchedule not deleted.\n");
                             fprintf(ptrDelete, "%s|%s|%s|%s|%s|%d\n", schedule[i].trainID, schedule[i].departureStation, schedule[i].arrivalStation, schedule[i].departureTime, schedule[i].arrivalTime, schedule[i].NumberOfSeats);
                         }
                     }
@@ -278,10 +279,10 @@ void deleteSchedule() {
         }
 
         printf("\nContinue deleting (y/n)? ");
-        while ((prompt = getchar()) != '\n' && prompt != EOF); // 清空输入缓冲区
-        prompt = tolower(prompt);
+        while (getchar() != '\n'); 
+        prompt = getchar();
 
-    } while (prompt == 'y' || id == 0);
+    } while (prompt == 'y' || prompt == 'Y');
 }
 
 void displaySchedule() {
@@ -311,41 +312,43 @@ void displaySchedule() {
 
 
 void searchSchedule() {
-    struct TrainSchedule schedule;
-    char searchID[10];
-    int found = 0, count = 1;
-
-
+    char searchID[11];
     printf("Enter Train ID to search: ");
     rewind(stdin);
     gets(searchID);
 
+    struct TrainSchedule schedule;
+    int found = 0;
+
     FILE* ptr = fopen("schedule.txt", "r");
+    if (ptr == NULL) {
+        printf("Error opening file.\n");
+        exit(-1);
+    }
 
     printf("\nSearch Result\n");
     printf("----------------------------------------------------------------------------------------------------\n");
     printf("| Train ID | Departure Station | Arrival Station | Departure Time | Arrival Time | Available Seats |\n");
     printf("----------------------------------------------------------------------------------------------------\n");
 
-    while (fscanf(ptr, "%[^|]|%[^|]|%[^|]|%[^|]|%[^\n]\n", &schedule.trainID, &schedule.departureStation, &schedule.arrivalStation, &schedule.departureTime, &schedule.arrivalTime, &schedule.NumberOfSeats) != EOF) {
-        printf(searchID);
-
+    while (fscanf(ptr, "%[^|]|%[^|]|%[^|]|%[^|]|%[^|]|%d\n", &schedule.trainID, &schedule.departureStation, &schedule.arrivalStation, &schedule.departureTime, &schedule.arrivalTime, &schedule.NumberOfSeats) != EOF) {
         if (strcmp(schedule.trainID, searchID) == 0) {
-            printf("| %-8s | %-17s | %-14s | %-14s | %-12s | %-15d |\n", count, schedule.trainID, schedule.departureStation, schedule.arrivalStation, schedule.departureTime, schedule.arrivalTime, schedule.NumberOfSeats);
+            printf("| %-8s | %-17s | %-14s | %-14s | %-12s | %-15d |\n", schedule.trainID, schedule.departureStation, schedule.arrivalStation, schedule.departureTime, schedule.arrivalTime, schedule.NumberOfSeats);
             found = 1;
         }
     }
 
     if (!found) {
-        printf("No results found!\n");
+        printf("No schedules found for Train ID: %s\n", searchID);
     }
-    else {
-        printf("\n%d result(s) found.\n", count);
-    }
+
     fclose(ptr);
 
-    system("pause");
+    printf("\nPress Enter to return to the main menu...");
+    while (getchar() != '\n');
+    getchar(); 
 }
+
 
 void main() {
     scheduleMenu();
