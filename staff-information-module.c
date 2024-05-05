@@ -53,6 +53,7 @@ void modeSelection()
 			staffDelete();
 			break;
 		case 5:
+			staffLogin();
 			staffPassRecovery();
 			break;
 		case 6:
@@ -68,38 +69,46 @@ void staffLogin()
 	char username[10];
 	char password[20];
 
-	printf("\nEnter Employee ID: ");
-	scanf("%s", username);
+	while (1)
+	{
+		printf("\nEnter Employee ID: ");
+		scanf("%s", username);
 
-	printf("Password: ");
-	scanf("%s", password);
+		printf("Password: ");
+		scanf("%s", password);
 
-	FILE * file;
-	errno_t err = fopen_s(&file, "staff.bin", "rb");
+		FILE* file;
+		errno_t err = fopen_s(&file, "staff.bin", "rb");
 
-	if (err != 0) {
-		printf("Error opening file!\n");
-		return -1;
-	}
+		if (err != 0) {
+			printf("Error opening file!\n");
+			return -1;
+		}
 
-	Staff currentStaff;
-	int found = 0;
+		Staff currentStaff;
+		int found = 0;
 
-	while (fread(&currentStaff, sizeof(Staff), 1, file) == 1) {
-		if (strcmp(currentStaff.employeeID, username) == 0 && strcmp(currentStaff.password, password) == 0) {
-			found = 1;
+		while (fread(&currentStaff, sizeof(Staff), 1, file) == 1) {
+			if (strcmp(currentStaff.employeeID, username) == 0 && strcmp(currentStaff.password, password) == 0) {
+				found = 1;
+				break;
+			}
+		}
+
+		fclose(file);
+
+		if (found == 0) {
+			printf("\nInvalid Employee ID or password.\n\n");
+			void modeSelection();
+		}
+		else
+		{ 
+			printf("\nLogin successful. Welcome!\n");
 			break;
 		}
 	}
-
-	fclose(file);
-
-	if (found == 0) {
-		printf("\nInvalid Employee ID or password.\n\n");
-		return 0;
-	}
-	printf("\nLogin successful. Welcome!\n");
 }
+	
 
 void staffAdd()
 {
