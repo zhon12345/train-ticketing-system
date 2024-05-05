@@ -2,21 +2,17 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
 #pragma warning(disable : 4996)
 
-#define MAX_SCHEDULES 50
-#define MAX_TRAIN_ID_LENGTH 6
-#define MAX_STATION_LENGTH 50
-#define MAX_TIME_LENGTH 6
+#define SIZE 100
 
 struct TrainSchedule {
-    char trainID[MAX_TRAIN_ID_LENGTH];
-    char departureStation[MAX_STATION_LENGTH];
-    char arrivalStation[MAX_STATION_LENGTH];
+    char trainID[11];
+    char departureStation[50];
+    char arrivalStation[50];
     int NumberOfSeats;
-    char departureTime[MAX_TIME_LENGTH];
-    char arrivalTime[MAX_TIME_LENGTH];
+    char departureTime[11];
+    char arrivalTime[11];
 };
 
 void scheduleMenu();
@@ -66,196 +62,234 @@ void scheduleMenu() {
 void addSchedule() {
     struct TrainSchedule schedule;
     FILE* ptr = fopen("schedule.txt", "a");
-    if (ptr == NULL) {
-        printf("An error occurred, please try again!\n");
-        exit(-1);
-    }
 
-    int validFormat = 0;
-    while (!validFormat) {
+    char prompt;
+
+    do {
         printf("\nEnter Train ID (eg. T1001): ");
         rewind(stdin);
-        fgets(schedule.trainID, sizeof(schedule.trainID), stdin);
-        schedule.trainID[strcspn(schedule.trainID, "\n")] = '\0';
+        gets(schedule.trainID);
 
-        if (((schedule.trainID[0] >= 'A' && schedule.trainID[0] <= 'Z') ||
-            (schedule.trainID[0] >= '0' && schedule.trainID[0] <= '9')) &&
-            (strlen(schedule.trainID) >= 4 && strlen(schedule.trainID) <= 6)) {
-            int digits = 0;
-            for (int i = 1; i < strlen(schedule.trainID); i++) {
-                if (isdigit(schedule.trainID[i])) {
-                    digits++;
-                }
-            }
-            if (digits >= 3 && digits <= 5) {
-                validFormat = 1;
-            }
+        printf("Enter Departure Station: ");
+        rewind(stdin);
+        gets(schedule.departureStation);
+
+        printf("Enter Arrival Station: ");
+        rewind(stdin);
+        gets(schedule.arrivalStation);
+
+        printf("Enter number of seats: ");
+        rewind(stdin);
+        scanf("%d", &schedule.NumberOfSeats);
+
+        printf("Enter Departure Time (eg. 07:00): ");
+        rewind(stdin);
+        gets(schedule.departureTime);
+
+        printf("Enter Arrival Time (eg. 12:00): ");
+        rewind(stdin);
+        gets(schedule.arrivalTime);
+
+        printf("\nConfirm add schedule (y/n)? ");
+        rewind(stdin);
+        char confirm = tolower(getchar());
+
+        if (confirm == 'y') {
+            fprintf(ptr, "%s|%s|%s|%s|%s|%d\n", schedule.trainID, schedule.departureStation, schedule.arrivalStation, schedule.departureTime, schedule.arrivalTime, schedule.NumberOfSeats);
         }
-        if (!validFormat) {
-            printf("Invalid Train ID format! Please enter again.\n");
+        else {
+            printf("\nAdd schedule cancel.\n");
         }
-    }
+        printf("\nAdd more schedule (y/n)? ");
+        rewind(stdin);
+        prompt = tolower(getchar());
+    } while (prompt != 'n');
 
-    printf("Enter Departure Station: ");
-    fgets(schedule.departureStation, sizeof(schedule.departureStation), stdin);
-    schedule.departureStation[strcspn(schedule.departureStation, "\n")] = '\0';
-
-    printf("Enter Arrival Station: ");
-    fgets(schedule.arrivalStation, sizeof(schedule.arrivalStation), stdin);
-    schedule.arrivalStation[strcspn(schedule.arrivalStation, "\n")] = '\0';
-
-    printf("Enter number of seats: ");
-    scanf("%d", &schedule.NumberOfSeats);
-    getchar();
-
-    printf("Enter Departure Time (eg. 07:00): ");
-    fgets(schedule.departureTime, sizeof(schedule.departureTime), stdin);
-    schedule.departureTime[strcspn(schedule.departureTime, "\n")] = '\0';
-    getchar();
-
-    printf("Enter Arrival Time (eg. 12:00): ");
-    fgets(schedule.arrivalTime, sizeof(schedule.arrivalTime), stdin);
-    schedule.arrivalTime[strcspn(schedule.arrivalTime, "\n")] = '\0';
-    getchar();
-
-    fprintf(ptr, "%s|%s|%s|%s|%s|%d\n", schedule.trainID, schedule.departureStation, schedule.arrivalStation, schedule.departureTime, schedule.arrivalTime, schedule.NumberOfSeats);
     fclose(ptr);
-
-    printf("\nSchedule added successfully!\n");
-
+    displaySchedule();
     system("pause");
 }
 
 void editSchedule() {
-    struct TrainSchedule schedule[MAX_SCHEDULES] = { 0 };
-    int count = 0;
-
-    FILE* ptr = fopen("schedule.txt", "r");
-    if (ptr == NULL) {
-        printf("An error occurred, please try again!\n");
+    struct TrainSchedule schedule[SIZE];
+    FILE* fptr = fopen("schedule.txt", "r");
+    if (fptr == NULL) {
+        printf("Error opening file.\n");
         exit(-1);
     }
 
-    while (fscanf(ptr, "%[^|]|%[^|]|%[^|]|%[^|]|%[^\n]\n", schedule[count].trainID, schedule[count].departureStation, schedule[count].arrivalStation, schedule[count].departureTime, schedule[count].arrivalTime) != EOF) {
+    int count = 0;
+    while (fscanf(fptr, "%[^|]|%[^|]|%[^|]|%[^|]|%[^|]|%d\n", &schedule[count].trainID, &schedule[count].departureStation, &schedule[count].arrivalStation, &schedule[count].departureTime, &schedule[count].arrivalTime, &schedule[count].NumberOfSeats) != EOF) {
         count++;
     }
-    fclose(ptr);
+    fclose(fptr);
 
     char prompt;
     do {
         int id;
+        char  trainID[11], departureStation[50], arrivalStation[50], departureTime[11], arrivalTime[11];
+        int NumberOfSeats;
 
-        printf("\nEnter number row to edit (0 to exit): ");
+        printf("\nEnter number row to edit: ");
         rewind(stdin);
         scanf("%d", &id);
 
-        if (id == 0) {
-            break;
-        }
-
-        if (id < 0 || id > count) {
-            printf("\nNo record found!\n");
-        }
-        else {
-            printf("\nEnter Train ID (eg. T1001): ");
-            rewind(stdin);
-            fgets(schedule[id - 1].trainID, sizeof(schedule[id - 1].trainID), stdin);
-            schedule[id - 1].trainID[strcspn(schedule[id - 1].trainID, "\n")] = '\0';
-
-            printf("Enter Departure Station: ");
-            fgets(schedule[id - 1].departureStation, sizeof(schedule[id - 1].departureStation), stdin);
-            schedule[id - 1].departureStation[strcspn(schedule[id - 1].departureStation, "\n")] = '\0';
-
-            printf("Enter Arrival Station: ");
-            fgets(schedule[id - 1].arrivalStation, sizeof(schedule[id - 1].arrivalStation), stdin);
-            schedule[id - 1].arrivalStation[strcspn(schedule[id - 1].arrivalStation, "\n")] = '\0';
-
-            printf("Enter Departure Time (eg. 07:00): ");
-            fgets(schedule[id - 1].departureTime, sizeof(schedule[id - 1].departureTime), stdin);
-            schedule[id - 1].departureTime[strcspn(schedule[id - 1].departureTime, "\n")] = '\0';
-            getchar();
-
-            printf("Enter Arrival Time (eg. 12:00): ");
-            fgets(schedule[id - 1].arrivalTime, sizeof(schedule[id - 1].arrivalTime), stdin);
-            schedule[id - 1].arrivalTime[strcspn(schedule[id - 1].arrivalTime, "\n")] = '\0';
-            getchar();
-
-            FILE* ptrWrite = fopen("schedule_temp.txt", "w");
-            for (int i = 0; i < count; i++) {
-                fprintf(ptrWrite, "%s|%s|%s|%s|%s\n", schedule[i].trainID, schedule[i].departureStation, schedule[i].arrivalStation, schedule[i].departureTime, schedule[i].arrivalTime);
+        if (id != 0) {
+            if (id < 1 || id > count) {
+                printf("\nNo record found!\n");
             }
-            fclose(ptrWrite);
+            else {
+                printf("\nEnter Train ID (eg. T1001): ");
+                rewind(stdin);
+                gets(trainID);
 
-            remove("schedule.txt");
+                printf("Enter Departure Station: ");
+                rewind(stdin);
+                gets(departureStation);
 
-            rename("schedule_temp.txt", "schedule.txt");
+                printf("Enter Arrival Station: ");
+                rewind(stdin);
+                gets(arrivalStation);
 
-            printf("\nSchedule updated successfully!\n");
+                printf("Enter number of seats: ");
+                rewind(stdin);
+                scanf("%d", &NumberOfSeats);
+
+                printf("Enter Departure Time (eg. 07:00): ");
+                rewind(stdin);
+                gets(departureTime);
+
+                printf("Enter Arrival Time (eg. 12:00): ");
+                rewind(stdin);
+                gets(arrivalTime);
+
+                printf("Confirm update (y/n)? ");
+                rewind(stdin);
+                char confirm = tolower(getchar());
+                if (confirm == 'y') {
+                    strcpy(schedule[id - 1].trainID, trainID);
+                    strcpy(schedule[id - 1].departureStation, departureStation);
+                    strcpy(schedule[id - 1].arrivalStation, arrivalStation);
+                    schedule[id - 1].NumberOfSeats = NumberOfSeats;
+                    strcpy(schedule[id - 1].departureTime, departureTime);
+                    strcpy(schedule[id - 1].arrivalTime, arrivalTime);
+
+
+                    printf("\nSchedule updated successfully!\n");
+
+                    FILE* tempFptr = fopen("temp_schedule.txt", "w");
+                    if (tempFptr == NULL) {
+                        printf("Error opening temp file.\n");
+                        exit(-1);
+                    }
+
+                    for (int i = 0; i < count; i++) {
+                        fprintf(tempFptr, "%s|%s|%s|%s|%s|%d\n", schedule[i].trainID, schedule[i].departureStation, schedule[i].arrivalStation, schedule[i].departureTime, schedule[i].arrivalTime, schedule[i].NumberOfSeats);
+                    }
+
+                    fclose(tempFptr);
+
+                    if (remove("schedule.txt") != 0) {
+                        printf("Error deleting original file.\n");
+                        exit(-1);
+                    }
+
+                    if (rename("temp_schedule.txt", "schedule.txt") != 0) {
+                        printf("Error renaming file.\n");
+                        exit(-1);
+                    }
+                }
+                else {
+                    printf("\nSchedule not found.\n");
+                }
+                printf("\nContinue editing (y/n)? ");
+                rewind(stdin);
+                prompt = tolower(getchar());
+            }
         }
-
-        printf("\nContinue editing (y/n)? ");
-        rewind(stdin);
-        prompt = tolower(getchar());
-
     } while (prompt != 'n');
 }
 
 void deleteSchedule() {
-    struct TrainSchedule schedule[MAX_SCHEDULES] = { 0 };
     char prompt;
     int id;
+
     do {
+        struct TrainSchedule schedule[SIZE];
         FILE* ptr = fopen("schedule.txt", "r");
         if (ptr == NULL) {
-            printf("An error occurred, please try again!\n");
+            printf("Error opening file.\n");
             exit(-1);
         }
 
         int count = 0;
-        while (fscanf(ptr, "%[^|]|%[^|]|%[^|]|%[^|]|%[^\n]\n", schedule[count].trainID, schedule[count].departureStation, schedule[count].arrivalStation, schedule[count].departureTime, schedule[count].arrivalTime) != EOF) {
+        while (fscanf(ptr, "%[^|]|%[^|]|%[^|]|%[^|]|%[^|]|%d\n", schedule[count].trainID, schedule[count].departureStation, schedule[count].arrivalStation, schedule[count].departureTime, schedule[count].arrivalTime, &schedule[count].NumberOfSeats) != EOF) {
             count++;
         }
         fclose(ptr);
 
         printf("\nEnter number row to delete (0 to exit): ");
-        rewind(stdin);
+        while (getchar() != '\n'); // 清空输入缓冲区
         scanf("%d", &id);
 
-        if (id == 0) {
-            break;
-        }
+        if (id != 0) {
+            if (id < 0 || id > count) {
+                printf("\nNo record found!\n");
+            }
+            else {
+                FILE* ptrDelete = fopen("temp_schedule.txt", "w");
+                if (ptrDelete == NULL) {
+                    printf("Error opening temp file.\n");
+                    exit(-1);
+                }
 
-        if (id < 0 || id > count) {
-            printf("\nNo record found!\n");
-        }
-        else {
-            FILE* ptrWrite = fopen("schedule_temp.txt", "w");
-            for (int i = 0; i < count; i++) {
-                if (i != id - 1) {
-                    fprintf(ptrWrite, "%s|%s|%s|%s|%s\n", schedule[i].trainID, schedule[i].departureStation, schedule[i].arrivalStation, schedule[i].departureTime, schedule[i].arrivalTime);
+                for (int i = 0; i < count; i++) {
+                    if (id - 1 == i) {
+                        printf(" | % -8s | % -17s | % -14s | % -14s | % -12s | % -15d | \n", id, schedule[id - 1].trainID, schedule[id - 1].departureStation, schedule[id - 1].arrivalStation, schedule[id - 1].departureTime, schedule[id - 1].arrivalTime, schedule[id - 1].NumberOfSeats);
+
+                        printf("\nConfirm delete (y/n)? ");
+                        char confirm;
+                        while ((confirm = getchar()) != '\n' && confirm != EOF); // 清空输入缓冲区
+                        confirm = tolower(confirm);
+                        if (confirm == 'y') {
+                            printf("\nSchedule deleted successfully\n");
+                        }
+                        else {
+                            printf("\nSchedule not found.\n");
+                            fprintf(ptrDelete, "%s|%s|%s|%s|%s|%d\n", schedule[i].trainID, schedule[i].departureStation, schedule[i].arrivalStation, schedule[i].departureTime, schedule[i].arrivalTime, schedule[i].NumberOfSeats);
+                        }
+                    }
+                    else {
+                        fprintf(ptrDelete, "%s|%s|%s|%s|%s|%d\n", schedule[i].trainID, schedule[i].departureStation, schedule[i].arrivalStation, schedule[i].departureTime, schedule[i].arrivalTime, schedule[i].NumberOfSeats);
+                    }
+                }
+                fclose(ptrDelete);
+
+                if (remove("schedule.txt") != 0) {
+                    printf("Error deleting original file.\n");
+                    exit(-1);
+                }
+
+                if (rename("temp_schedule.txt", "schedule.txt") != 0) {
+                    printf("Error renaming file.\n");
+                    exit(-1);
                 }
             }
-            fclose(ptrWrite);
-
-            printf("\nSchedule deleted successfully!\n");
         }
 
         printf("\nContinue deleting (y/n)? ");
-        rewind(stdin);
-        prompt = tolower(getchar());
+        while ((prompt = getchar()) != '\n' && prompt != EOF); // 清空输入缓冲区
+        prompt = tolower(prompt);
 
-    } while (prompt != 'n');
-
-    system("pause");
+    } while (prompt == 'y' || id == 0);
 }
 
 void displaySchedule() {
+    struct TrainSchedule schedule;
     FILE* ptr = fopen("schedule.txt", "r");
     if (ptr == NULL) {
-        printf("No schedules found!\n");
-        printf("\nPress Enter to return to the main menu...");
-        while (getchar() != '\n');
-        return;
+        printf("Error opening file.\n");
+        exit(-1);
     }
 
     printf("\nTrain Schedule\n");
@@ -263,62 +297,57 @@ void displaySchedule() {
     printf("| Train ID | Departure Station | Arrival Station | Departure Time | Arrival Time | Available Seats |\n");
     printf("----------------------------------------------------------------------------------------------------\n");
 
-    struct TrainSchedule schedule;
-    int found = 0;
-    while (fscanf(ptr, "%[^|]|%[^|]|%[^|]|%[^|]|%[^|]|%d\n", schedule.trainID, schedule.departureStation, schedule.arrivalStation, schedule.departureTime, schedule.arrivalTime, &schedule.NumberOfSeats) == 6) {
-        found = 1;
-        printf("| %-8s | %-17s | %-14s | %-14s | %-12s | %-15d |\n", schedule.trainID, schedule.departureStation, schedule.arrivalStation, schedule.departureTime, schedule.arrivalTime, schedule.NumberOfSeats);
+    int count = 0;
+    while (fscanf(ptr, "%[^|]|%[^|]|%[^|]|%[^|]|%[^|]|%d\n", &schedule.trainID, &schedule.departureStation, &schedule.arrivalStation, &schedule.departureTime, &schedule.arrivalTime, &schedule.NumberOfSeats) != EOF) {
+        count++;
+        printf(" %-10s %-20s %-20s %-14s %-14s %-15d\n", schedule.trainID, schedule.departureStation, schedule.arrivalStation, schedule.departureTime, schedule.arrivalTime, schedule.NumberOfSeats);
     }
-    fclose(ptr);
 
-    if (!found) {
+    if (count == 0) {
         printf("No schedules found!\n");
     }
-
-    printf("\nPress Enter to return to the main menu...");
-    while (getchar() != '\n');
-
-    system("pause");
+    fclose(ptr);
 }
 
 
 void searchSchedule() {
-    char searchID[MAX_TRAIN_ID_LENGTH];
+    struct TrainSchedule schedule;
+    char searchID[10];
+    int found = 0, count = 1;
+
+
     printf("Enter Train ID to search: ");
     rewind(stdin);
     gets(searchID);
 
     FILE* ptr = fopen("schedule.txt", "r");
-    if (ptr == NULL) {
-        printf("No schedules found!\n");
-        printf("\nPress Enter to return to the main menu...");
-        return;
-    }
 
     printf("\nSearch Result\n");
     printf("----------------------------------------------------------------------------------------------------\n");
     printf("| Train ID | Departure Station | Arrival Station | Departure Time | Arrival Time | Available Seats |\n");
     printf("----------------------------------------------------------------------------------------------------\n");
 
-    struct TrainSchedule schedule;
-    int found = 0;
-    while (fscanf(ptr, "%[^|]|%[^|]|%[^|]|%[^|]|%[^\n]\n", schedule.trainID, schedule.departureStation, schedule.arrivalStation, schedule.departureTime, schedule.arrivalTime) != EOF) {
+    while (fscanf(ptr, "%[^|]|%[^|]|%[^|]|%[^|]|%[^\n]\n", &schedule.trainID, &schedule.departureStation, &schedule.arrivalStation, &schedule.departureTime, &schedule.arrivalTime, &schedule.NumberOfSeats) != EOF) {
         printf(searchID);
 
         if (strcmp(schedule.trainID, searchID) == 0) {
+            printf("| %-8s | %-17s | %-14s | %-14s | %-12s | %-15d |\n", count, schedule.trainID, schedule.departureStation, schedule.arrivalStation, schedule.departureTime, schedule.arrivalTime, schedule.NumberOfSeats);
             found = 1;
-            printf("| %-8s | %-17s | %-14s | %-14s | %-12s | %-15d |\n", schedule.trainID, schedule.departureStation, schedule.arrivalStation, schedule.departureTime, schedule.arrivalTime, schedule.NumberOfSeats);
-            break;
         }
+    }
+
+    if (!found) {
+        printf("No results found!\n");
+    }
+    else {
+        printf("\n%d result(s) found.\n", count);
     }
     fclose(ptr);
 
-    printf("\nPress Enter to return to the main menu...");
-    while (getchar() != '\n');
-
     system("pause");
 }
-int main() {
+
+void main() {
     scheduleMenu();
     return 0;
 }
