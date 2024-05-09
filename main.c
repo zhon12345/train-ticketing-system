@@ -98,14 +98,14 @@ void staffView() {
 
     printf("\nEnter keyword to search: ");
     rewind(stdin);
-    strlwr(gets(keyword));
+    gets(keyword);
 
     FILE *ptrSearch = openFile("tickets.txt", "r");
 
     ticketsHeader();
     while (fscanf(ptrSearch, "%[^|]|%[^|]|%[^|]|%[^|]|%lf\n", &ticket.destination, &ticket.trainID, &ticket.departureDate, &ticket.departureTime, &ticket.price) != EOF) {
         strcpy(destination, ticket.destination);
-        if (strcmp(strlwr(destination), keyword) == 0) {
+        if (strcmp(strlwr(destination), strlwr(keyword)) == 0) {
             printf("%-3d %-15s %-10s %-15s %-15s %.2lf\n", count++, ticket.destination, ticket.trainID, ticket.departureDate, ticket.departureTime, ticket.price);
             found = 1;
         }
@@ -114,7 +114,7 @@ void staffView() {
     if (!found) {
         printf("No results found!\n");
     } else {
-        printf("\n%d result(s) found.\n", count);
+        printf("\n%d result(s) found.\n", count - 1);
     }
     fclose(ptrSearch);
 }
