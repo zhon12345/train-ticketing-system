@@ -1237,8 +1237,7 @@ void deleteSchedule() {
         }
 
         printf("\nContinue deleting (y/n)? ");
-        while (getchar() != '\n')
-            ;
+        while (getchar() != '\n');
         prompt = getchar();
 
     } while (prompt == 'y' || prompt == 'Y');
@@ -1303,8 +1302,7 @@ void searchSchedule() {
     fclose(ptr);
 
     printf("\nPress Enter to return to the main menu...");
-    while (getchar() != '\n')
-        ;
+    while (getchar() != '\n');
     getchar();
 }
 
